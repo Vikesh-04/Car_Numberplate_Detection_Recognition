@@ -4,7 +4,10 @@ Flask application that detects the car number plate using YOLOv3 and performs nu
 YOLOv3  model was trained on 1000+ car images <br />
 
 Prerequisite - <br />
-- YOLOv3 model weight file <br />
-- YOLOv3 model testing cfg file <br />
-- OCR.space API for number recognition <br />
+- YOLOv3 model .weights file <br />
+- YOLOv3 model testing .cfg file <br />
+- OCR.space API key for number recognition <br />
+- PostgreSQL database
+- psycopg2 library for connecting to PostgreSQL database
+- flask for deployment
 
