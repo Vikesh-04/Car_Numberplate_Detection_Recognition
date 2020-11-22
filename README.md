@@ -8,7 +8,8 @@ Prerequisite - <br />
 - YOLOv3 model .weights file <br />
 - YOLOv3 model testing .cfg file <br />
 - OCR.space API key for number recognition <br />
-- PostgreSQL database
-- psycopg2 library for connecting to PostgreSQL database
-- flask for deployment
+- PostgreSQL database <br />
+- psycopg2 library for connecting to PostgreSQL database <br />
+- flask for deployment <br />
 
+For Yolov3 number plate detection output go to - uploads\output folder  <br />
