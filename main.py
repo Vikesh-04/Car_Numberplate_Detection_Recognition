@@ -5,10 +5,8 @@ import glob
 import re
 import numpy as np
 import cv2
-import glob
 import random
 import requests
-import re
 import psycopg2
 
 # Flask utils
@@ -31,6 +29,8 @@ def detection(img_path,img_name):
     class_ids = []
     confidences = []
     boxes = []
+    detected,output_filename,dest=None,None,None
+
     for out in outs:
         for detection in out:
             scores = detection[5:]
@@ -46,28 +46,33 @@ def detection(img_path,img_name):
                 boxes.append([x, y, w, h])
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
-    font = cv2.FONT_HERSHEY_PLAIN
-    for i in range(len(boxes)):
-        if i in indexes:
-            x, y, w, h = boxes[i]
-            label = str(classes[class_ids[i]])
-            color = colors[class_ids[i]]
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0,0,255), 2)
-    plate=roi[y:y+h, x:x+w, :]
-    basepath = os.path.dirname(__file__)
-    output_filename='output_'+img_name
-    dest=os.path.join(basepath,"uploads\output",output_filename)
-    cv2.imwrite(dest,img)
-    cropped_output_filename='Cropped_output_'+img_name
-    dest=os.path.join(basepath,"uploads\output",cropped_output_filename)
-    cv2.imwrite(dest,plate)
-    return output_filename,dest
+    if len(boxes)==0:
+        print("Number plate not detected. Please click another photo by changing camera position and the angle.")
+        detected=False
+    else:
+        detected=True
+        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+        font = cv2.FONT_HERSHEY_PLAIN
+        for i in range(len(boxes)):
+            if i in indexes:
+                x, y, w, h = boxes[i]
+                label = str(classes[class_ids[i]])
+                color = colors[class_ids[i]]
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0,0,255), 2)
+        plate=roi[y:y+h, x:x+w, :]
+        basepath = os.path.dirname(__file__)
+        output_filename='output_'+img_name
+        dest=os.path.join(basepath,"uploads\output",output_filename)
+        cv2.imwrite(dest,img)
+        cropped_output_filename='Cropped_output_'+img_name
+        dest=os.path.join(basepath,"uploads\output",cropped_output_filename)
+        cv2.imwrite(dest,plate)
+    return detected,output_filename,dest
 
 
 def ocr_space_file(filename, overlay=False, api_key='helloworld', language='eng'):
     payload = {'isOverlayRequired': overlay,
-               'apikey': 'your ocr.space api Key',
+               'apikey': '4b8e6659de88957',
                'language': language,
                'filetype':'JPG',
                'scale':'true',
@@ -79,7 +84,7 @@ def ocr_space_file(filename, overlay=False, api_key='helloworld', language='eng'
 
 def check_database(number):
     try:
-        connection = psycopg2.connect(user = "db username", password = "db password",host = "localhost",port = "5432",database = "db name")
+        connection = psycopg2.connect(user = "postgres", password = "vikesh12345",host = "localhost",port = "5432",database = "Capstone_Project")
         cursor = connection.cursor()
         select_query = "select * from car where car_registration_no = %s"
 
@@ -110,17 +115,24 @@ def upload():
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(basepath, 'uploads', secure_filename(f.filename))
         f.save(file_path)
-        output_filename,plate_file_path=detection(file_path,f.filename)
-        response = ocr_space_file(filename=plate_file_path, language='eng')
-        number=response['ParsedResults'][0]['ParsedText'].replace(" ", "")
-        number=re.sub(r'[^A-Za-z0-9]+', '', number)
-        car_details=check_database(number)
-        return render_template('index.html',output=car_details,img_loc=output_filename,output_number=number)
+        detected,output_filename,plate_file_path=detection(file_path,f.filename)
+        if detected==True:
+            response = ocr_space_file(filename=plate_file_path, language='eng')
+            number=response['ParsedResults'][0]['ParsedText'].replace(" ", "")
+            number=re.sub(r'[^A-Za-z0-9]+', '', number)
+            car_details=check_database(number)
+            return render_template('index.html',detected=True,output=car_details,img_loc=output_filename,output_number=number)
+        else:
+            return render_template('index.html',detected=False,output=None,img_loc=f.filename,output_number=None)
     return None
 
-@app.route('/display/<filename>')
-def send_image(filename):
+@app.route('/output/<filename>')
+def output_image(filename):
 	return send_from_directory('uploads/output',filename)
+
+@app.route('/input/<filename>')
+def input_image(filename):
+    return send_from_directory('uploads',filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
