@@ -31,9 +31,9 @@
                     </div>
                     <div class="loader" style="display:none;"></div>
                 </form>
-                
+        {% if detected==True %}       
                 {% if output %}
-                <img src=" {{url_for('send_image',filename=img_loc)}}">
+                <img src=" {{url_for('output_image',filename=img_loc)}}">
                 <h5> {{ output_number }} </h5>
                 <h5> Car details </h5>
                     <table class="table" style="max-width: 600px;">
@@ -56,9 +56,15 @@
                     </table>
                 {% endif %}
                 {% if output is none %}
-                <img src=" {{url_for('send_image',filename=img_loc)}}" width="50%" height="50%">
+                <img src=" {{url_for('output_image',filename=img_loc)}}">
                     <h5> Car {{ output_number }} details not found in database</h5>
                 {% endif %}
+        {% endif %}
+        {% if detected==False %}
+                <img src=" {{url_for('input_image',filename=img_loc)}}" >
+                <h5> Number plate not detected. Please click another photo by changing camera position and the angle.</h5>
+        {% endif %}
+
     </div>
     
 </body>
