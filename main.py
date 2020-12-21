@@ -72,7 +72,7 @@ def detection(img_path,img_name):
 
 def ocr_space_file(filename, overlay=False, api_key='helloworld', language='eng'):
     payload = {'isOverlayRequired': overlay,
-               'apikey': '4b8e6659de88957',
+               'apikey': 'insert your ocr.space api key',
                'language': language,
                'filetype':'JPG',
                'scale':'true',
@@ -84,7 +84,7 @@ def ocr_space_file(filename, overlay=False, api_key='helloworld', language='eng'
 
 def check_database(number):
     try:
-        connection = psycopg2.connect(user = "postgres", password = "vikesh12345",host = "localhost",port = "5432",database = "Capstone_Project")
+        connection = psycopg2.connect(user = "postgres", password = "password",host = "localhost",port = "5432",database = "Project")
         cursor = connection.cursor()
         select_query = "select * from car where car_registration_no = %s"
 
